@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broken Heart Game</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, #ff9a9e, #fad0c4);
+    font-family: sans-serif;
+  }
+  canvas {
+    display: block;
+    margin: auto;
+    background: transparent;
+  }
+  #score {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 1px 1px 4px #000;
+  }
+</style>
+</head>
+<body>
+<div id="score">Score: 0</div>
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let hearts = [];
+let score = 0;
+let gameOver = false;
+
+function Heart(x, y, color) {
+  this.x = x;
+  this.y = y;
+  this.size = 30;
+  this.color = color;
+  this.speed = Math.random() * 2 + 2;
+}
+
+function drawHeart(x, y, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.bezierCurveTo(x - 15, y - 15, x - 25, y + 10, x, y + 25);
+  ctx.bezierCurveTo(x + 25, y + 10, x + 15, y - 15, x, y);
+  ctx.fill();
+}
+
+function spawnHeart() {
+  let color = Math.random() < 0.9 ? 'red' : 'black'; // 10% chance for black heart
+  let x = Math.random() * canvas.width;
+  hearts.push(new Heart(x, -30, color));
+}
+
+function update() {
+  if (gameOver) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hearts.forEach((h, i) => {
+    h.y += h.speed;
+    drawHeart(h.x, h.y, h.color);
+    if (h.y > canvas.height + 50) hearts.splice(i, 1);
+  });
+
+  document.getElementById('score').textContent = `Score: ${score}`;
+  requestAnimationFrame(update);
+}
+
+canvas.addEventListener('click', (e) => {
+  if (gameOver) return;
+  let mx = e.clientX, my = e.clientY;
+  for (let i = 0; i < hearts.length; i++) {
+    let h = hearts[i];
+    let dx = mx - h.x, dy = my - h.y;
+    if (Math.sqrt(dx * dx + dy * dy) < 30) {
+      if (h.color === 'black') {
+        gameOver = true;
+        alert(`💔 O‘yin tugadi! Sizning ballingiz: ${score}`);
+      } else {
+        score++;
+      }
+      hearts.splice(i, 1);
+      break;
+    }
+  }
+});
+
+setInterval(spawnHeart, 800);
+update();
+</script>
+</body>
+</html>
